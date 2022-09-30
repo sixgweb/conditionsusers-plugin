@@ -1,0 +1,4 @@
+id:
+    label: User Group
+    type: checkboxlist
+    options: Sixgweb\ConditionsUsers\Classes\UserGroupConditionerEventHandler::getUserGroupIdOptions
