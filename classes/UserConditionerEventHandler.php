@@ -3,21 +3,44 @@
 namespace Sixgweb\ConditionsUsers\Classes;
 
 use Auth;
-use Sixgweb\Conditions\Classes\ConditionsManager;
+use Event;
+use Sixgweb\Conditions\Classes\ConditionersManager;
 use Sixgweb\Conditions\Classes\AbstractConditionerEventHandler;
 
 class UserConditionerEventHandler extends AbstractConditionerEventHandler
 {
-    protected $set = false;
-
     protected function getModelClass(): string
     {
         return \RainLab\User\Models\User::class;
     }
 
-    protected function getModelFields(): string
+    protected function getControllerClass(): ?string
     {
-        return base_path() . '/plugins/sixgweb/conditionsusers/conditioners/user.yaml';
+        //All backend controllers
+        return \Backend\Classes\Controller::class;
+    }
+
+    protected function getFieldConfig(): array
+    {
+        return [
+            'label' => 'User',
+            'type' => 'recordfinder',
+            'list' => '~/plugins/rainlab/user/models/user/columns.yaml',
+            'recordsPerPage' => 10,
+            'title' => 'Find User',
+            'prompt' => 'Click the Find button to find a user',
+            'keyFrom' => 'id',
+            'nameFrom' => 'name',
+            'descriptionFrom' => 'email',
+            'searchMode' => 'all',
+            'useRelation' => false,
+            'modelClass' => 'RainLab\User\Models\User',
+        ];
+    }
+
+    protected function getGroupName(): string
+    {
+        return 'Users';
     }
 
     protected function getModelOptions(): array
@@ -26,35 +49,16 @@ class UserConditionerEventHandler extends AbstractConditionerEventHandler
             '1' => 'Logged In',
             'null' => 'Not Logged In',
         ];
-        return $this->getModelClass()::lists('name', 'id');
     }
 
-    protected function getComponentClasses(): ?array
+    protected function getConditionerCallback(): ?callable
     {
-        return [
-            \Cms\Classes\ComponentBase::class
-        ];
-    }
-
-    protected function getControllerClass(): ?string
-    {
-        return \Backend\Classes\Controller::class;
-    }
-
-    protected function getConditionGroupName(): string
-    {
-        return 'Users';
-    }
-
-    protected function componentCallback($component, $conditionerModel): void
-    {
-        if ($this->set === true) {
-            return;
-        }
-
-        $user = Auth::getUser() ?? new \RainLab\User\Models\User;
-        $conditionsManager = ConditionsManager::instance();
-        $conditionsManager->replaceConditioner($user);
-        $this->set = true;
+        return function () {
+            Event::listen('cms.page.beforeDisplay', function () {
+                $user = Auth::getUser() ?? new \RainLab\User\Models\User;
+                $conditionersManager = ConditionersManager::instance();
+                $conditionersManager->replaceConditioner($user);
+            });
+        };
     }
 }

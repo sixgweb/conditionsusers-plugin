@@ -3,66 +3,54 @@
 namespace Sixgweb\ConditionsUsers\Classes;
 
 use Auth;
-use Sixgweb\Conditions\Classes\ConditionsManager;
+use Event;
+use Sixgweb\Conditions\Classes\ConditionersManager;
 use Sixgweb\Conditions\Classes\AbstractConditionerEventHandler;
 
 class UserGroupConditionerEventHandler extends AbstractConditionerEventHandler
 {
-    protected $set = false;
-
     protected function getModelClass(): string
     {
         return \RainLab\User\Models\UserGroup::class;
     }
 
-    protected function getModelFields(): string
-    {
-        return base_path() . '/plugins/sixgweb/conditionsusers/conditioners/usergroup.yaml';
-    }
-
-    protected function getModelOptions(): array
-    {
-        return [null => 'NULL'] + $this->getModelClass()::lists('name', 'id');
-    }
-
-    public static function getUserGroupIdOptions()
-    {
-        return \RainLab\User\Models\UserGroup::lists('name', 'id');
-    }
-
-    protected function getComponentClasses(): ?array
-    {
-        return [
-            \Cms\Classes\ComponentBase::class
-        ];
-    }
-
     protected function getControllerClass(): ?string
     {
+        //All backend controllers
         return \Backend\Classes\Controller::class;
     }
 
-    protected function getConditionGroupName(): string
+    protected function getFieldConfig(): array
+    {
+        return [
+            'label' => 'User Group',
+            'type' => 'checkboxlist',
+            'options' => $this->getModelOptions(),
+        ];
+    }
+
+    protected function getGroupName(): string
     {
         return 'User Group';
     }
 
-    protected function componentCallback($component, $conditionerModel): void
+    protected function getModelOptions(): array
     {
-        if ($this->set === true) {
-            return;
-        }
+        return $this->getModelClass()::lists('name', 'id');
+    }
 
-        if ($user = Auth::getUser()) {
-            $groups = $user->groups->count() ? $user->groups : new \RainLab\User\Models\UserGroup;
-        } else {
-            $user = new \RainLab\User\Models\User;
-            $groups = new \RainLab\User\Models\UserGroup;
-        }
+    protected function getConditionerCallback(): ?callable
+    {
+        return function () {
+            Event::listen('cms.page.beforeDisplay', function () {
+                if ($user = Auth::getUser()) {
+                    $groups = $user->groups->count() ? $user->groups : new \RainLab\User\Models\UserGroup;
+                } else {
+                    $groups = new \RainLab\User\Models\UserGroup;
+                }
 
-        $conditionsManager = ConditionsManager::instance();
-        $conditionsManager->replaceConditioner($user);
-        $conditionsManager->replaceConditioner($groups);
-        $this->set = true;
+                ConditionersManager::instance()->replaceConditioner($groups);
+            });
+        };
     }
 }

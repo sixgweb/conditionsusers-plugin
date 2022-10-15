@@ -9,7 +9,7 @@ use System\Classes\PluginBase;
 use RainLab\User\Models\User;
 use RainLab\User\Models\UserGroup;
 use Sixgweb\Conditions\Behaviors\Conditionable;
-use Sixgweb\Conditions\Classes\ConditionsManager;
+use Sixgweb\Conditions\Classes\ConditionersManager;
 use Sixgweb\ConditionsUsers\Classes\UserConditionerEventHandler;
 use Sixgweb\ConditionsUsers\Classes\UserGroupConditionerEventHandler;
 
@@ -54,13 +54,9 @@ class Plugin extends PluginBase
      */
     public function boot()
     {
-        //Event::subscribe(ConditionableEventHandler::class);
         Event::subscribe(UserConditionerEventHandler::class);
         Event::subscribe(UserGroupConditionerEventHandler::class);
         $this->addUserGroupConditionerToRelatedModels();
-        //$this->extendUserModels();
-        //$this->extendFilterWidget();
-        //$this->addUserConditioners();
     }
 
     /**
@@ -116,68 +112,12 @@ class Plugin extends PluginBase
                         $q->where('user_id', $value);
                     })->get();
                     if ($groups) {
-                        ConditionsManager::instance()->addConditioner($groups);
+                        ConditionersManager::instance()->addConditioner($groups);
                     } else {
-                        ConditionsManager::instance()->addConditioner(new UserGroup);
+                        ConditionersManager::instance()->addConditioner(new UserGroup);
                     }
                 }
             }
         });
-    }
-
-    protected function extendUserModels()
-    {
-        exit('hi');
-        \RainLab\User\Models\User::extend(function ($model) {
-            $model->implement[] = 'Sixgweb.Conditions.Behaviors.Conditioner';
-            $model->addDynamicProperty('conditionerFields', base_path() . '/plugins/sixgweb/conditionsusers/conditioners/user.yaml');
-            $model->addPurgeable('conditionerFields');
-        });
-
-        \RainLab\User\Models\UserGroup::extend(function ($model) {
-            $model->implement[] = 'Sixgweb.Conditions.Behaviors.Conditioner';
-            $model->implement[] = 'Sixgweb.Database.Behaviors.Purgeable';
-            $model->addDynamicProperty('conditionerFields', base_path() . '/plugins/sixgweb/conditionsusers/conditioners/usergroup.yaml');
-            $model->addDynamicProperty('purgeable', ['conditionerFields']);
-        });
-    }
-
-    protected function extendFilterWidget()
-    {
-        Event::listen('backend.filter.extendScopes', function ($widget) {
-
-            if (!$widget->model->isClassExtendedWith(Conditionable::class)) {
-                return;
-            }
-
-            $widget->addScopes([
-                'RainLab_User_Models_UserGroup' => [
-                    'label' => 'Forms',
-                    'options' => UserGroup::get()->pluck('name', 'id')->toArray(),
-                    'type' => 'dropdown',
-                    'emptyOption' => 'All User Groups',
-                    'modelScope' => 'meetsConditions'
-                ]
-            ]);
-        });
-    }
-
-
-    protected function addUserConditioners()
-    {
-        $conditionsManager = ConditionsManager::instance();
-        $conditionsManager->addConditionerGroup('User', 'RainLab\User\Models\User');
-        $conditionsManager->addConditionerGroup('User Group', 'RainLab\User\Models\UserGroup');
-
-        if (!App::runningInBackend()) {
-            if ($user = Auth::getUser()) {
-                $groups = $user->groups->count() ? $user->groups : new \RainLab\User\Models\UserGroup;
-            } else {
-                $user = new \RainLab\User\Models\User;
-                $groups = new \RainLab\User\Models\UserGroup;
-            }
-            $conditionsManager->addConditioner($user);
-            $conditionsManager->addConditioner($groups);
-        }
     }
 }
