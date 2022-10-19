@@ -1,7 +1,7 @@
 {
     "name": "sixgweb/conditionsusers-plugin",
     "type": "october-plugin",
-    "description": "No description provided yet...",
+    "description": "RainLab User Conditions Integration",
     "require": {
         "composer/installers": "~1.0"
     }
