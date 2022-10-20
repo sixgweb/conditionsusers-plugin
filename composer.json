@@ -2,6 +2,7 @@
     "name": "sixgweb/conditionsusers-plugin",
     "type": "october-plugin",
     "description": "RainLab User Conditions Integration",
+    "license": "MIT",
     "require": {
         "composer/installers": "~1.0"
     }
