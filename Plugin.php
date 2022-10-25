@@ -2,13 +2,11 @@
 
 namespace Sixgweb\ConditionsUsers;
 
-use App;
-use Auth;
 use Event;
+use Schema;
 use System\Classes\PluginBase;
 use RainLab\User\Models\User;
 use RainLab\User\Models\UserGroup;
-use Sixgweb\Conditions\Behaviors\Conditionable;
 use Sixgweb\Conditions\Classes\ConditionersManager;
 use Sixgweb\ConditionsUsers\Classes\UserConditionerEventHandler;
 use Sixgweb\ConditionsUsers\Classes\UserGroupConditionerEventHandler;
@@ -54,45 +52,14 @@ class Plugin extends PluginBase
      */
     public function boot()
     {
+        //If RainLab.User isn't installed (migrated), the 
+        //event handler will throw a table not found error
+        if (!Schema::hasTable('users')) {
+            return;
+        }
         Event::subscribe(UserConditionerEventHandler::class);
         Event::subscribe(UserGroupConditionerEventHandler::class);
         $this->addUserGroupConditionerToRelatedModels();
-    }
-
-    /**
-     * Registers any front-end components implemented in this plugin.
-     *
-     * @return array
-     */
-    public function registerComponents()
-    {
-        return []; // Remove this line to activate
-
-        return [
-            'Sixgweb\ConditionsUsers\Components\MyComponent' => 'myComponent',
-        ];
-    }
-
-    /**
-     * Registers any backend permissions used by this plugin.
-     *
-     * @return array
-     */
-    public function registerPermissions()
-    {
-        return []; // Remove this line to activate
-
-        return [
-            'sixgweb.conditionsusers.some_permission' => [
-                'tab' => 'ConditionsUsers',
-                'label' => 'Some permission'
-            ],
-        ];
-    }
-
-    public function registerConditionGroups()
-    {
-        return [];
     }
 
     protected function addUserGroupConditionerToRelatedModels()
