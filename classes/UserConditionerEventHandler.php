@@ -43,6 +43,11 @@ class UserConditionerEventHandler extends AbstractConditionerEventHandler
         return 'Users';
     }
 
+    protected function getGroupIcon(): string
+    {
+        return 'bi-person-fill';
+    }
+
     protected function getModelOptions(): array
     {
         return [

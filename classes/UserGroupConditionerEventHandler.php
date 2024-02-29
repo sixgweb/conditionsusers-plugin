@@ -34,6 +34,11 @@ class UserGroupConditionerEventHandler extends AbstractConditionerEventHandler
         return 'User Group';
     }
 
+    protected function getGroupIcon(): string
+    {
+        return 'bi-people-fill';
+    }
+
     protected function getModelOptions(): array
     {
         return $this->getModelClass()::lists('name', 'id');

@@ -2,3 +2,4 @@
 1.0.2: Update composer dependencies
 1.0.3: Check user table exists
 1.0.4: Bump composer version of user-plugin to 2.0
+1.0.5: Add conditioners getGroupIcon method for repeater group icons
