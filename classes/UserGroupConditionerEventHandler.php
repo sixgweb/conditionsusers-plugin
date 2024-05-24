@@ -48,8 +48,15 @@ class UserGroupConditionerEventHandler extends AbstractConditionerEventHandler
     {
         return function () {
             Event::listen('cms.page.beforeDisplay', function () {
-                if ($user = Auth::getUser()) {
+                if ($user = Auth::user()) {
                     $groups = $user->groups->count() ? $user->groups : new \RainLab\User\Models\UserGroup;
+                    if ($user->primary_group) {
+                        if ($groups instanceof \Illuminate\Database\Eloquent\Collection) {
+                            $groups->push($user->primary_group);
+                        } else {
+                            $groups = $user->primary_group;
+                        }
+                    }
                 } else {
                     $groups = new \RainLab\User\Models\UserGroup;
                 }

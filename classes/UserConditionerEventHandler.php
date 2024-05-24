@@ -60,7 +60,7 @@ class UserConditionerEventHandler extends AbstractConditionerEventHandler
     {
         return function () {
             Event::listen('cms.page.beforeDisplay', function () {
-                $user = Auth::getUser() ?? new \RainLab\User\Models\User;
+                $user = Auth::user() ?? new \RainLab\User\Models\User;
                 $conditionersManager = ConditionersManager::instance();
                 $conditionersManager->replaceConditioner($user);
             });

@@ -3,3 +3,7 @@
 1.0.3: Check user table exists
 1.0.4: Bump composer version of user-plugin to 2.0
 1.0.5: Add conditioners getGroupIcon method for repeater group icons
+1.0.6: 
+  - Update composer for user plugin 3.0
+  - Switch to Auth::user() instead of Auth::getUser()
+  - Update conditioner logic for new primary_group user column
